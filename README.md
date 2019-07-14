@@ -6,6 +6,7 @@ Unblind is an application for Windows that automatically raises and lowers displ
 * Brightness control support for both desktop and laptop computers
 * Customizable day/night times with smooth transition over time between brightness levels
 * Optionally sync display brightness with sunrise/sunset using location
+* Support for any number of attached displays
 
 ### Requirements
 * Windows 7+
