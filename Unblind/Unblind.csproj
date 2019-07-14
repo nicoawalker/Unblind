@@ -187,9 +187,6 @@
     <Resource Include="Images\MaterialDesign\control_off.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\TrayIcon.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\MaterialDesign\unblind.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -198,6 +195,12 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\unblind.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

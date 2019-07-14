@@ -98,7 +98,7 @@ namespace Unblind
 		private void _CreateTrayIcon()
 		{
 			//create new NotifyIcon that will function as the tray icon
-			m_trayIcon = new System.Windows.Forms.NotifyIcon { Icon = Properties.Resources.UnblindTrayIcon, Visible = true };
+			m_trayIcon = new System.Windows.Forms.NotifyIcon { Icon = Properties.Resources.UnblindTrayIcon, Visible = true, Text = "Unblind is running" };
 			m_trayIcon.DoubleClick += ( object sender, EventArgs args ) =>
 			{
 				this.Show();
@@ -123,7 +123,6 @@ namespace Unblind
 			cMenu.MenuItems.Add(cMenuItem);
 
 			m_trayIcon.ContextMenu = cMenu;
-			m_trayIcon.Text = "Unblind is running";
 		}
 
 		private void _RemoveTrayIcon()

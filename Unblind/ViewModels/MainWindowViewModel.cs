@@ -26,7 +26,7 @@ namespace Unblind
 
 		private const int m_versionMajor = 1;
 		private const int m_versionMinor = 0;
-		private const int m_versionIteration = 0;
+		private const int m_versionIteration = 1;
 
 		//locking object to provide thread safety
 		private object m_vmLock;
@@ -489,7 +489,8 @@ namespace Unblind
 					try
 					{
 						lnk.TargetPath = System.AppDomain.CurrentDomain.BaseDirectory + @"\Unblind.exe";
-						lnk.IconLocation = "shell32.dll, 1";
+						lnk.IconLocation = AppDomain.CurrentDomain.BaseDirectory + @"Resources\unblind.ico";
+						Console.WriteLine(lnk.IconLocation);
 						lnk.Save();
 
 					}
