@@ -24,9 +24,9 @@ namespace Unblind
 		//value (in percent) used to temporarily set the brightness as a preview while the user slides the brightness slider
 		private const double m_previewDuration = 500.0;
 
-		private const int m_versionMajor = 0;
-		private const int m_versionMinor = 9;
-		private const int m_versionIteration = 5;
+		private const int m_versionMajor = 1;
+		private const int m_versionMinor = 0;
+		private const int m_versionIteration = 0;
 
 		//locking object to provide thread safety
 		private object m_vmLock;

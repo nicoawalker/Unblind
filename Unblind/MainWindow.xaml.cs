@@ -123,6 +123,7 @@ namespace Unblind
 			cMenu.MenuItems.Add(cMenuItem);
 
 			m_trayIcon.ContextMenu = cMenu;
+			m_trayIcon.Text = "Unblind is running";
 		}
 
 		private void _RemoveTrayIcon()
