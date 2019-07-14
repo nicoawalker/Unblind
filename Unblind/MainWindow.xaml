@@ -1,0 +1,466 @@
+﻿<Window x:Class="Unblind.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:Unblind"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}" Height="320" Width="410"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanMinimize"
+        Icon="/Unblind;component/Images/MaterialDesign/unblind.png">
+    <Window.Resources>
+        <local:BooleanToStringConverter x:Key="BooleanToVisibilityConverter" TrueValue="Visible" FalseValue="Hidden" />
+        <local:BrightnessToBackgroundConverter x:Key="BrightnessToBackgroundConverter" />
+        <local:TimeSpanToDateTimeConverter x:Key="TimeSpanToDateTimeConverter" />
+        <local:TransitionDurationStringConverter x:Key="TransitionDurationStringConverter" />
+        <sys:Int32 x:Key="IntZero">0</sys:Int32>
+
+        <BitmapImage x:Key="IconSettings" UriSource="/Unblind;component/Images/MaterialDesign/settings.png" />
+        <BitmapImage x:Key="IconSettingsOutline" UriSource="/Unblind;component/Images/MaterialDesign/settings-outline.png" />
+        <BitmapImage x:Key="IconUnblind" UriSource="/Unblind;component/Images/MaterialDesign/unblind.png" />
+        <BitmapImage x:Key="IconBrightnessArrow" UriSource="/Unblind;component/Images/Unblind_BrightnessArrow.png" />
+        <BitmapImage x:Key="IconTimerArrow" UriSource="/Unblind;component/Images/Unblind_TimerArrow.png" />
+        <BitmapImage x:Key="IconMoon" UriSource="/Unblind;component/Images/MaterialDesign/moon.png" />
+        <BitmapImage x:Key="IconSun" UriSource="/Unblind;component/Images/MaterialDesign/sun.png" />
+        <BitmapImage x:Key="IconSettingsCloseBlack" UriSource="/Unblind;component/Images/close_black.png" />
+        <BitmapImage x:Key="IconSettingsCloseRed" UriSource="/Unblind;component/Images/close_red.png" />
+        <BitmapImage x:Key="IconControlOff" UriSource="/Unblind;component/Images/MaterialDesign/control_off.png" />
+        <BitmapImage x:Key="IconMultiDisplay" UriSource="/Unblind;component/Images/MaterialDesign/multiple_display.png" />
+        <BitmapImage x:Key="IconNoSupport" UriSource="/Unblind;component/Images/MaterialDesign/no_support.png" />
+        <BitmapImage x:Key="IconLocationOff" UriSource="/Unblind;component/Images/MaterialDesign/location_off.png" />
+    </Window.Resources>
+    <Window.Background>
+        <ImageBrush ImageSource="{Binding CurrentBrightness, Converter={StaticResource BrightnessToBackgroundConverter}, ConverterParameter={StaticResource IntZero}}"/>
+    </Window.Background>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="88" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Button Name="OpenSettingsPanelButton" Height="25" Width="25" Grid.Column="0" Grid.Row="0" Margin="10" Click="OpenSettingsPanelButton_Click"
+                BorderBrush="{x:Null}" Background="Transparent" ToolTip="Settings">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Image x:Name="settingsButton_MouseOver" Source="{StaticResource IconSettingsOutline}" Visibility="Visible" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="settingsButton_MouseOver" Property="Source" Value="{StaticResource IconSettings}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+
+        <!--Indicator icon panel-->
+        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 5 5 0">
+            <Image Source="{StaticResource IconLocationOff}" Height="18" Margin="4 0"
+                   ToolTip="Location is off">
+                <Image.Style>
+                    <Style TargetType="{x:Type Image}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding LocationEnabled, Mode=OneWay}" Value="False">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding LocationEnabled, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+            <Image Source="{StaticResource IconMultiDisplay}" Height="18" Margin="4 0"
+                   ToolTip="Multiple displays are being controlled">
+                <Image.Style>
+                    <Style TargetType="{x:Type Image}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MultipleDisplaysConnected, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding MultipleDisplaysConnected, Mode=OneWay}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+            <Image Source="{StaticResource IconNoSupport}" Height="18" Margin="4 0"
+                   ToolTip="One or more displays may not support software brightness changes.&#x0a;These displays may react erratically to changes in brightness.">
+                <Image.Style>
+                    <Style TargetType="{x:Type Image}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding NoSupportDetected, Mode=OneWay}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding NoSupportDetected, Mode=OneWay}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Image.Style>
+            </Image>
+        </StackPanel>
+
+        <!--Current brightness display-->
+        <Border BorderBrush="{x:Null}" Height="Auto" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Grid.RowSpan="2">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Image Name="BrightnessUpArrow" Source="{StaticResource IconBrightnessArrow}" Height="13" 
+                       Margin="0 0 0 -30">
+                    <Image.RenderTransform>
+                        <ScaleTransform ScaleY="-1"/>
+                    </Image.RenderTransform>
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentBrightnessTransitionStatus}" Value="Dimming">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CurrentBrightnessTransitionStatus}" Value="Brightening">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CurrentBrightnessTransitionStatus}" Value="Idle">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <TextBlock FontSize="45" FontWeight="ExtraBold" VerticalAlignment="Center" TextAlignment="Center" 
+                           Foreground="FloralWhite" ToolTip="Current brightness">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Text" Value="{Binding CurrentBrightness, Mode=OneWay}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentBrightness}" Value="0">
+                                    <Setter Property="Text" Value="-"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <Image Name="BrightnessDownArrow" Source="{StaticResource IconBrightnessArrow}" Height="13" VerticalAlignment="Center" 
+                       Margin="0 -4 0 0">
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentBrightnessTransitionStatus}" Value="Dimming">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CurrentBrightnessTransitionStatus}" Value="Brightening">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding CurrentBrightnessTransitionStatus}" Value="Idle">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Nighttime brightness indicator-->
+            <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center"
+                        ToolTip="Nighttime Brightness">
+                <Image Source="{StaticResource IconMoon}" Width="20" Height="20" Margin="15 0 0 0" />
+                <TextBlock Text="{Binding BrightnessScheduler.NightBrightness, Mode=OneWay}" Grid.Column="0" Grid.Row="0" TextAlignment="Center"
+                           Foreground="#ffededed" FontSize="14" FontWeight="Bold" Margin="15 0 0 0" />
+            </StackPanel>
+
+            <!--Time to next period countdown timer-->
+            <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                        ToolTip="Time until next brightness change">
+                <Image Name="TimerLeftArrow" Source="{StaticResource IconTimerArrow}" Height="8" VerticalAlignment="Center" Margin="0 4 2 0">
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding BrightnessScheduler.CurrentTimePeriod}" Value="Day">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding BrightnessScheduler.CurrentTimePeriod}" Value="Night">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding BrightnessScheduler.CurrentTimePeriod}" Value="None">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+                <TextBlock Text="{Binding TimeToNextPeriod, Mode=OneWay}" Grid.Column="1" Grid.Row="1" TextAlignment="Center" 
+                           Foreground="#ffededed" VerticalAlignment="Center" FontSize="25" FontWeight="bold" />
+                <Image Name="TimerRightArrow" Source="{StaticResource IconTimerArrow}" Height="8" FlowDirection="RightToLeft" VerticalAlignment="Center" Margin="2 4 0 0">
+                    <Image.Style>
+                        <Style TargetType="{x:Type Image}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding BrightnessScheduler.CurrentTimePeriod}" Value="Day">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding BrightnessScheduler.CurrentTimePeriod}" Value="Night">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding BrightnessScheduler.CurrentTimePeriod}" Value="None">
+                                    <Setter Property="Visibility" Value="Hidden"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
+            </StackPanel>
+
+            <!--Daytime brightness indicator-->
+            <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Vertical" VerticalAlignment="Center"
+                        ToolTip="Daytime Brightness">
+                <Image Source="{StaticResource IconSun}" Width="20" Height="20" Margin="0 0 14 0" />
+                <TextBlock Text="{Binding BrightnessScheduler.DayBrightness, Mode=OneWay}" Grid.Column="2" Grid.Row="0" TextAlignment="Center"
+                           Foreground="#ffededed" FontSize="14" FontWeight="Bold" Margin="0 0 15 0" />
+            </StackPanel>
+        </Grid>
+
+        <!--Settings panel-->
+        <Border Name="SettingsPanel" Margin="10" BorderThickness="0" BorderBrush="{x:Null}" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" Grid.ColumnSpan="2"
+                Background="White" Padding="0 0 0 20" Visibility="Hidden">
+            <Border.Effect>
+                <DropShadowEffect Color="Black"
+                          Direction="270"
+                          BlurRadius="10"
+                          ShadowDepth="3" />
+            </Border.Effect>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="18"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Settings" TextAlignment="Center" VerticalAlignment="Center"
+                           FontSize="16"/>
+
+                <!--Settings menu close button-->
+                <Button Name="SettingPanelCloseButton" Grid.Column="1" Click="SettingPanelCloseButton_Click" Height="12">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Image x:Name="settingsPanel_Close" Source="{StaticResource IconSettingsCloseBlack}" Visibility="Visible" />
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="settingsPanel_Close" Property="Source" Value="{StaticResource IconSettingsCloseRed}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!--Settings-->
+                <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2">
+                    <StackPanel>
+                        <ToggleButton Name="StartWithWindowsToggleButton" Height="36" Content="Start with Windows" IsChecked="{Binding StartWithWindows}"
+                                      Margin="10 5 0 0" FontSize="12" >
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image>
+                                            <Image.Style>
+                                                <Style>
+                                                    <Setter Property="Image.Source" Value="Images\toggle_off.png" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="True">
+                                                            <Setter Property="Image.Source" Value="Images\toggle_on.png"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Image.Style>
+                                        </Image>
+                                        <ContentPresenter Content="{TemplateBinding Content}" Margin="4 0 0 0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+
+                        <CheckBox Content="Start minimized" Margin="30 -5 0 5" IsChecked="{Binding StartMinimized}">
+                            <CheckBox.Style>
+                                <Style TargetType="{x:Type CheckBox}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=StartWithWindowsToggleButton, Path=IsChecked}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ElementName=StartWithWindowsToggleButton, Path=IsChecked}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </CheckBox.Style>
+                        </CheckBox>
+
+                        <!--Brightness sliders and settings-->
+                        <StackPanel Margin="10 0 0 15">
+                            <TextBlock Text="Brightness" FontSize="16" Margin="0 0 0 5" />
+                            <Grid Margin="10 5 20 0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="20"/>
+                                    <RowDefinition Height="20"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="At night:" FontSize="12" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" />
+                                <TextBlock Text="{Binding ElementName=MinBrightnessSlider, Path=Value, StringFormat={}{0}%}" Grid.Column="0" 
+                                        Grid.Row="0" Grid.ColumnSpan="5" FontSize="12" FontWeight="Bold" TextAlignment="Center" />
+                                <TextBlock Text="{Binding ElementName=MinBrightnessSlider, Path=Minimum}" FontSize="12" Grid.Column="0" Grid.Row="1"
+                                        VerticalAlignment="Center"/>
+                                <Slider Name="MinBrightnessSlider" Minimum="{Binding MinDisplayBrightness}" Maximum="{Binding MaxDisplayBrightness}" 
+                                    Value="{Binding BrightnessScheduler.NightBrightness, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True"
+                                    Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" />
+                                <TextBlock Text="{Binding ElementName=MinBrightnessSlider, Path=Maximum}" FontSize="12" Grid.Column="4" Grid.Row="1"
+                                        VerticalAlignment="Center"/>
+                            </Grid>
+                            <Grid Margin="10 5 20 0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="20"/>
+                                    <RowDefinition Height="20"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="50"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="During the day:" FontSize="12" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" />
+                                <TextBlock Text="{Binding ElementName=MaxBrightnessSlider, Path=Value, StringFormat={}{0}%}" Grid.Column="0" Grid.Row="0" 
+                                        Grid.ColumnSpan="5" FontSize="12" FontWeight="Bold" TextAlignment="Center" />
+                                <TextBlock Text="{Binding ElementName=MaxBrightnessSlider, Path=Minimum}" FontSize="12" Grid.Column="0" Grid.Row="1" />
+                                <Slider Name="MaxBrightnessSlider" Minimum="{Binding ElementName=MinBrightnessSlider, Path=Value}" 
+                                        Maximum="{Binding MaxDisplayBrightness}" Value="{Binding BrightnessScheduler.DayBrightness, Mode=TwoWay}" 
+                                        TickFrequency="1" IsSnapToTickEnabled="True" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" />
+                                <TextBlock Text="{Binding ElementName=MaxBrightnessSlider, Path=Maximum}" FontSize="12" Grid.Column="4" Grid.Row="1" />
+                            </Grid>
+                        </StackPanel>
+
+                        <TextBlock Text="Schedule" FontSize="16" Margin="10 0 0 5"/>
+                        
+                        <StackPanel Orientation="Vertical" Margin="20 0">
+                            <!--Location on/off toggle button-->
+                            <ToggleButton Name="UseLocationToggleButton" Height="36" Content="Use my location to synchronize with sunrise/sunset" IsChecked="{Binding LocationEnabled, Mode=TwoWay}"
+                                      Margin="0 5 0 0" FontSize="12" >
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image>
+                                                <Image.Style>
+                                                    <Style>
+                                                        <Setter Property="Image.Source" Value="Images\toggle_off.png" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="True">
+                                                                <Setter Property="Image.Source" Value="Images\toggle_on.png"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Image.Style>
+                                            </Image>
+                                            <ContentPresenter Content="{TemplateBinding Content}" Margin="4 0 0 0" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            
+                            <!--Location settings-->
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel.Style>
+                                    <Style TargetType="{x:Type StackPanel}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=UseLocationToggleButton, Path=IsChecked}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ElementName=UseLocationToggleButton, Path=IsChecked}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                                <StackPanel Orientation="Horizontal" Height="25" Margin="0 4">
+                                    <TextBlock Text="Enter your location: " FontSize="12" VerticalAlignment="Center" />
+                                    <TextBox Name="userLocationTextBox" FontSize="12" IsUndoEnabled="False" Width="114" Height="20" 
+                                             VerticalAlignment="Center" Margin="5 0 5 0"/>
+                                    <Button Content="Google search" FontSize="11" Height="20" Click="LocationSearchButton_Click" />
+                                </StackPanel>
+                            
+                                <StackPanel Orientation="Horizontal" Height="25" Margin="0 4">
+                                    <TextBlock Text="Latitude: " FontSize="12" VerticalAlignment="Center" />
+                                    <TextBox Text="{Binding Latitude}" FontSize="12" IsUndoEnabled="False" 
+                                            PreviewTextInput="LocationTextBox_PreviewTextInput" Width="80" Height="20" VerticalAlignment="Center"
+                                            Margin="5 0 2 0" DataObject.Pasting="LocationTextBox_Pasting" />
+                                    <TextBlock Text="°N" FontSize="12" VerticalAlignment="Center" Margin="0 0 10 0" />
+                                    <TextBlock Text="Longitude: " FontSize="12" VerticalAlignment="Center" />
+                                    <TextBox Text="{Binding Longitude}" FontSize="12" IsUndoEnabled="False" 
+                                            PreviewTextInput="LocationTextBox_PreviewTextInput" Width="80" Height="20" VerticalAlignment="Center"
+                                            Margin="5 0 2 0" DataObject.Pasting="LocationTextBox_Pasting" />
+                                    <TextBlock Text="°E" FontSize="12" VerticalAlignment="Center" />
+                                
+                                </StackPanel>
+                                <TextBlock Text="*Southern and Western coordinates must be negative" FontSize="10" 
+                                           VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0 -5 0 0"
+                                           Foreground="Gray"/>
+                                <Separator Margin="20 7"/>
+                            </StackPanel>
+
+                            <!--Brightness schedule settings-->
+                            <StackPanel Orientation="Horizontal"  Height="25" Margin="0 4">
+                                <TextBlock Text="Daytime starts at:" FontSize="12" Margin="0 0 10 0" VerticalAlignment="Center" />
+                                <xctk:TimePicker FontSize="12" ShowButtonSpinner="True" TextAlignment="Center" Width="100" Height="20"
+                                             Value="{Binding BrightnessScheduler.Daytime, Mode=TwoWay, Converter={StaticResource TimeSpanToDateTimeConverter}}" TimeInterval="00:30" Kind="Utc"/>
+                                <TextBlock Text="local time" FontSize="12" Margin="10 0 0 0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Height="25" Margin="0 4">
+                                <TextBlock Text="Transitioning from night to day should take" FontSize="12" VerticalAlignment="Center" />
+                                <TextBox Name="RaiseTransitionTextBox" Text="{Binding BrightnessScheduler.NightToDayTransitionDuration, Converter={StaticResource TransitionDurationStringConverter}}" FontSize="12" IsUndoEnabled="False" 
+                                     MaxLength="3" PreviewTextInput="TransitionTextBox_PreviewTextInput" Width="30" Height="20" VerticalAlignment="Center"
+                                     Margin="5 0 5 0"/>
+                                <TextBlock Text="minutes" FontSize="12" VerticalAlignment="Center" />
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Height="25" Margin="0 4">
+                                <TextBlock Text="Nighttime starts at:" FontSize="12" Margin="0 0 10 0" VerticalAlignment="Center" />
+                                <xctk:TimePicker FontSize="12" ShowButtonSpinner="True" TextAlignment="Center" Width="100" Height="20"
+                                     Value="{Binding BrightnessScheduler.Nighttime, Mode=TwoWay, Converter={StaticResource TimeSpanToDateTimeConverter}}" TimeInterval="00:30" Kind="Utc" />
+                                <TextBlock Text="local time" FontSize="12" Margin="10 0 0 0" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Height="25" Margin="0 4">
+                                <TextBlock Text="Transitioning from day to night should take" FontSize="12" VerticalAlignment="Center"/>
+                                <TextBox Name="LowerTransitionTextBox" Text="{Binding BrightnessScheduler.DayToNightTransitionDuration, Converter={StaticResource TransitionDurationStringConverter}}" FontSize="12" IsUndoEnabled="False" 
+                                     MaxLength="3" PreviewTextInput="TransitionTextBox_PreviewTextInput" Width="30" Height="20" VerticalAlignment="Center" Margin="5 0 5 0" />
+                                <TextBlock Text="minutes" FontSize="12" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
