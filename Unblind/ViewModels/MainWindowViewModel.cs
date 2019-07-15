@@ -26,7 +26,7 @@ namespace Unblind
 
 		private const int m_versionMajor = 1;
 		private const int m_versionMinor = 0;
-		private const int m_versionIteration = 1;
+		private const int m_versionIteration = 2;
 
 		//locking object to provide thread safety
 		private object m_vmLock;
@@ -289,18 +289,27 @@ namespace Unblind
 
 			WindowTitle = "Unblind " + m_versionMajor.ToString() + "." + m_versionMinor.ToString() + "." + m_versionIteration.ToString();
 
-			bool supportsBrightness = true;
-			foreach ( Display display in dispController.AttachedDisplays )
+			if ( dispController.AttachedDisplays.Count > 0 )
 			{
-				if ( m_firstRun && supportsBrightness && display.SupportsBrightness() == false )
+				bool supportsBrightness = true;
+				foreach ( Display display in dispController.AttachedDisplays )
 				{
-					supportsBrightness = false;
-					MessageBox.Show("It appears that one or more of your displays do not support the DDC/CI protocol required to change the brightness via software. Unblind may or may not be able to control these displays.", "Hmm...", MessageBoxButton.OK);
+					if ( m_firstRun && supportsBrightness && display.SupportsBrightness() == false )
+					{
+						supportsBrightness = false;
+						MessageBox.Show("It appears that one or more of your displays do not support the DDC/CI protocol required to change the brightness via software. Unblind may or may not be able to control these displays.", "Hmm...", MessageBoxButton.OK);
+					}
+
+					//determine the highest minimum brightness and lowest maximum brightness among all displays and use these as the brightness limits
+					if ( display.MinBrightness > m_minDisplayBrightness ) MinDisplayBrightness = MathHelpers.Greater(display.MinBrightness, (uint)1);
+					if ( display.MaxBrightness > m_maxDisplayBrightness ) MaxDisplayBrightness = MathHelpers.Greater(display.MaxBrightness, (uint)1);
+					if ( display.SupportsBrightness() == false ) NoSupportDetected = true;
 				}
 
-				if ( display.MinBrightness > m_minDisplayBrightness ) MinDisplayBrightness = MathHelpers.Greater(display.MinBrightness, (uint)1);
-				if ( display.MaxBrightness > m_maxDisplayBrightness ) MaxDisplayBrightness = MathHelpers.Greater(display.MaxBrightness, (uint)1);
-				if ( display.SupportsBrightness() == false ) NoSupportDetected = true;
+			}else if(dispController.IntegratedDisplaySupported == true)
+			{
+				MinDisplayBrightness = 0;
+				MaxDisplayBrightness = 100;
 			}
 
 			if ( dispController.AttachedDisplays.Count > 1 || (dispController.AttachedDisplays.Count >= 1 && dispController.IntegratedDisplaySupported == true) ) MultipleDisplaysConnected = true;
@@ -402,7 +411,8 @@ namespace Unblind
 			{
 				//have to re-check whether there are multiple monitors and if all monitors support brightness changes
 				DisplayController controller = DisplayController.Instance;
-				MultipleDisplaysConnected = (controller.AttachedDisplays.Count > 1) ? true : false;
+				MultipleDisplaysConnected = (controller.AttachedDisplays.Count > 1 || (controller.AttachedDisplays.Count == 1 && controller.IntegratedDisplaySupported == true)) ? true : false;
+				NoSupportDetected = false;
 				foreach ( Display display in controller.AttachedDisplays )
 				{
 					if ( display.SupportsBrightness() == false )
