@@ -21,6 +21,8 @@ namespace Unblind
 
 		public readonly DisplayController.PhysicalMonitorDesc Handle;
 
+		private static uint m_id = 0;
+
 		public readonly uint ID;
 		public readonly uint CapabilityFlags;
 		public readonly uint ColorTemperatureFlags;
@@ -38,12 +40,12 @@ namespace Unblind
 		}
 
 		public bool IsValid;
-		
-		public Display(uint id, DisplayController.PhysicalMonitorDesc handle, uint minBrightness, uint maxBrightness, uint currentBrightness, uint capabilityFlags, uint colorTempFlags)
+
+		public Display( DisplayController.PhysicalMonitorDesc handle, uint minBrightness, uint maxBrightness, uint currentBrightness, uint capabilityFlags, uint colorTempFlags )
 		{
 			locker = new object();
 
-			ID = id;
+			ID = m_id++;
 			Handle = handle;
 			MinBrightness = minBrightness;
 			MaxBrightness = maxBrightness;
@@ -60,7 +62,7 @@ namespace Unblind
 		}
 	}
 
-	public delegate void DisplayRefresh( DisplayController controller );
+	public delegate void DisplayRefresh();
 
 	public sealed class DisplayController
 	{
@@ -265,11 +267,9 @@ namespace Unblind
 					uint maxBrightness = 0, minBrightness = 0, currentBrightness = 0;
 					_QueryMonitorBrightnessInfo(physicalMonitor, out minBrightness, out maxBrightness, out currentBrightness);
 
-					uint id = 0;
 					lock ( m_displayListLock )
 					{
-						if ( m_attachedDisplays.Count > 0 ) id = m_attachedDisplays.Last().ID + 1;
-						attachedDisplays.Add(new Display(id, physicalMonitor, minBrightness, maxBrightness, currentBrightness, capabilitiesFlags, colorTempFlags));
+						attachedDisplays.Add(new Display(physicalMonitor, minBrightness, maxBrightness, currentBrightness, capabilitiesFlags, colorTempFlags));
 					}
 				}
 			}
@@ -288,10 +288,7 @@ namespace Unblind
 			uint index = 0;
 			foreach ( Display display in displays )
 			{
-				if ( display.Handle.hPhysicalMonitor != IntPtr.Zero )
-				{
-					monitorArray[index++] = display.Handle;
-				}
+				monitorArray[index++] = display.Handle;
 			}
 
 			if ( !DestroyPhysicalMonitors((uint)monitorArray.Length, monitorArray) )
@@ -333,7 +330,7 @@ namespace Unblind
 				catch ( Win32Exception e )
 				{
 					System.Diagnostics.Debug.WriteLine("Error enumerating physical monitors: " + e.Message);
-					MessageBox.Show("An error occured while scanning your attached displays. Please try restarting Unblind.\n\nError: " + e.Message);
+					MessageBox.Show("An error occured while scanning your attached displays. Unblind may not function correctly.\n\nError: " + e.Message);
 				}
 			}
 
@@ -405,9 +402,13 @@ namespace Unblind
 		{
 			if ( !SetMonitorBrightness(monitor.hPhysicalMonitor, brightness) )
 			{
+				Win32Exception e = new Win32Exception(Marshal.GetLastWin32Error());
+				System.Diagnostics.Debug.WriteLine("_SetDisplayBrightness failed. Display handle: {0}\n    Reason: {1}", monitor.hPhysicalMonitor, e.Message);
 				/*call can sporadically fail, so try again just in case*/
 				if ( !SetMonitorBrightness(monitor.hPhysicalMonitor, brightness) )
 				{
+					e = new Win32Exception(Marshal.GetLastWin32Error());
+					System.Diagnostics.Debug.WriteLine("_SetDisplayBrightness failed twice. Display handle: {0}\n    Reason: {1}", monitor.hPhysicalMonitor, e.Message);
 					return Marshal.GetLastWin32Error();
 				}
 			}
@@ -475,7 +476,6 @@ namespace Unblind
 								}
 								catch ( Exception e )
 								{
-									MessageBox.Show("An integrated display appears to be present, but an error occured trying to set its brightness: " + e.Message);
 									System.Diagnostics.Debug.WriteLine("An integrated display appears to be present, but an error occured trying to set its brightness: " + e.Message);
 								}
 							}
@@ -568,7 +568,6 @@ namespace Unblind
 			{
 				//ensure refresh doesn't happen before initalization
 				await Initialization;
-
 				DisplayCollection displays = _GetAttachedDisplays();
 
 				lock ( m_displayListLock )
@@ -577,11 +576,12 @@ namespace Unblind
 					{
 						display.IsValid = false;
 					}
-
+					_DestroyPhysicalMonitors(m_attachedDisplays);
+					
 					m_attachedDisplays = displays;
 				}
-
-				OnDisplayRefesh(DisplayController.Instance);
+				
+				OnDisplayRefesh?.Invoke();
 			});
 		}
 

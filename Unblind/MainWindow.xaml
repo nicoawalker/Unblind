@@ -63,7 +63,7 @@
         <!--Indicator icon panel-->
         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 5 5 0">
             <Image Source="{StaticResource IconLocationOff}" Height="18" Margin="4 0"
-                   ToolTip="Location is off">
+                   ToolTip="Sunrise/sunset synchronization is off">
                 <Image.Style>
                     <Style TargetType="{x:Type Image}">
                         <Style.Triggers>
@@ -78,7 +78,7 @@
                 </Image.Style>
             </Image>
             <Image Source="{StaticResource IconMultiDisplay}" Height="18" Margin="4 0"
-                   ToolTip="Multiple displays are being controlled">
+                   ToolTip="Multiple displays have been detected and will be controlled if possible">
                 <Image.Style>
                     <Style TargetType="{x:Type Image}">
                         <Style.Triggers>
@@ -93,7 +93,7 @@
                 </Image.Style>
             </Image>
             <Image Source="{StaticResource IconNoSupport}" Height="18" Margin="4 0"
-                   ToolTip="One or more displays may not support software brightness changes.&#x0a;These displays may react erratically to changes in brightness.">
+                   ToolTip="One or more displays may not support software brightness changes.&#x0a;These displays can react erratically or not at all to changes in brightness.">
                 <Image.Style>
                     <Style TargetType="{x:Type Image}">
                         <Style.Triggers>
@@ -334,7 +334,8 @@
                                         Grid.Row="0" Grid.ColumnSpan="5" FontSize="12" FontWeight="Bold" TextAlignment="Center" />
                                 <TextBlock Text="{Binding ElementName=MinBrightnessSlider, Path=Minimum}" FontSize="12" Grid.Column="0" Grid.Row="1"
                                         VerticalAlignment="Center"/>
-                                <Slider Name="MinBrightnessSlider" Minimum="{Binding MinDisplayBrightness}" Maximum="{Binding MaxDisplayBrightness}" 
+                                <!--nighttime brightness slider-->
+                                <Slider Name="MinBrightnessSlider" Minimum="1" Maximum="100" 
                                     Value="{Binding BrightnessScheduler.NightBrightness, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True"
                                     Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" />
                                 <TextBlock Text="{Binding ElementName=MinBrightnessSlider, Path=Maximum}" FontSize="12" Grid.Column="4" Grid.Row="1"
@@ -356,8 +357,9 @@
                                 <TextBlock Text="{Binding ElementName=MaxBrightnessSlider, Path=Value, StringFormat={}{0}%}" Grid.Column="0" Grid.Row="0" 
                                         Grid.ColumnSpan="5" FontSize="12" FontWeight="Bold" TextAlignment="Center" />
                                 <TextBlock Text="{Binding ElementName=MaxBrightnessSlider, Path=Minimum}" FontSize="12" Grid.Column="0" Grid.Row="1" />
+                                <!--daytime brightness slider-->
                                 <Slider Name="MaxBrightnessSlider" Minimum="{Binding ElementName=MinBrightnessSlider, Path=Value}" 
-                                        Maximum="{Binding MaxDisplayBrightness}" Value="{Binding BrightnessScheduler.DayBrightness, Mode=TwoWay}" 
+                                        Maximum="100" Value="{Binding BrightnessScheduler.DayBrightness, Mode=TwoWay}" 
                                         TickFrequency="1" IsSnapToTickEnabled="True" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" />
                                 <TextBlock Text="{Binding ElementName=MaxBrightnessSlider, Path=Maximum}" FontSize="12" Grid.Column="4" Grid.Row="1" />
                             </Grid>

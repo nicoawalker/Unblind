@@ -26,7 +26,7 @@ namespace Unblind
 
 		private const int m_versionMajor = 1;
 		private const int m_versionMinor = 0;
-		private const int m_versionIteration = 2;
+		private const int m_versionIteration = 3;
 
 		//locking object to provide thread safety
 		private object m_vmLock;
@@ -314,9 +314,13 @@ namespace Unblind
 
 			if ( dispController.AttachedDisplays.Count > 1 || (dispController.AttachedDisplays.Count >= 1 && dispController.IntegratedDisplaySupported == true) ) MultipleDisplaysConnected = true;
 
+			dispController.OnDisplayRefesh += _OnDisplayRefresh;
+
 			CurrentBrightnessTransitionStatus = DimmerStatus.Idle;
 
 			_UpdateTimeToNextPeriod();
+
+			m_brightnessDimmer.SetDisplayBrightness((m_brightnessScheduler.CurrentTimePeriod == TimePeriod.Day) ? (uint)m_brightnessScheduler.DayBrightness : (uint)m_brightnessScheduler.NightBrightness);
 
 			m_systemClockTimer.Start();
 		}
@@ -407,26 +411,29 @@ namespace Unblind
 		/// </summary>
 		private void _OnDisplayChangeDetected()
 		{
-			DisplayController.Instance?.RefreshAsync().ContinueWith(_ =>
-			{
-				//have to re-check whether there are multiple monitors and if all monitors support brightness changes
-				DisplayController controller = DisplayController.Instance;
-				MultipleDisplaysConnected = (controller.AttachedDisplays.Count > 1 || (controller.AttachedDisplays.Count == 1 && controller.IntegratedDisplaySupported == true)) ? true : false;
-				NoSupportDetected = false;
-				foreach ( Display display in controller.AttachedDisplays )
-				{
-					if ( display.SupportsBrightness() == false )
-					{
-						NoSupportDetected = true;
-						break;
-					}
-				}
+			DisplayController.Instance?.RefreshAsync();
+		}
 
-				if ( m_brightnessDimmer.Status == DimmerStatus.Idle )
+		private void _OnDisplayRefresh()
+		{
+			//have to re-check whether there are multiple monitors and if all monitors support brightness changes
+			DisplayController controller = DisplayController.Instance;
+			MultipleDisplaysConnected = (controller.AttachedDisplays.Count > 1 || (controller.AttachedDisplays.Count == 1 && controller.IntegratedDisplaySupported == true)) ? true : false;
+
+			NoSupportDetected = false;
+			foreach ( Display display in controller.AttachedDisplays )
+			{
+				if ( display.SupportsBrightness() == false )
 				{
-					m_brightnessDimmer.AdjustBrightness(m_currentBrightness, m_currentBrightness, 0.0);
+					NoSupportDetected = true;
+					break;
 				}
-			});
+			}
+
+			if ( m_brightnessDimmer.Status == DimmerStatus.Idle )
+			{
+				m_brightnessDimmer.AdjustBrightness(m_currentBrightness, m_currentBrightness, 0.0);
+			}
 		}
 
 		/// <summary>
